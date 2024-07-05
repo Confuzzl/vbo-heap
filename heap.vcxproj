@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -130,6 +130,8 @@
   <ItemGroup>
     <ClCompile Include="debug.ixx" />
     <ClCompile Include="gl.ixx" />
+    <ClCompile Include="heap.cpp" />
+    <ClCompile Include="heap.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vbo_heap.cpp" />
     <ClCompile Include="vbo_heap.ixx" />

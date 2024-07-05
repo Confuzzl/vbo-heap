@@ -1,6 +1,5 @@
 module vbo_heap;
 
-// VBOHeap::raw_vbo_handle::~raw_vbo_handle() { chunk->free(this); }
 VBOHeap::VBOHandle::~VBOHandle() { data->chunk->free(data); }
 
 VBOHeap::VBO::free_list::free_list() {
@@ -18,44 +17,46 @@ VBOHeap::VBO::free_list::~free_list() {
   }
 }
 
-void VBOHeap::VBO::free_list::setBegin(free_block *block) {
+VBOHeap::VBO::free_list::free_block *
+VBOHeap::VBO::free_list::setBegin(free_block *block) {
   block->prev = nullptr;
   block->next = begin;
   begin->prev = block;
   begin = block;
+  return block;
 }
-void VBOHeap::VBO::free_list::setEnd(free_block *block) {
+VBOHeap::VBO::free_list::free_block *
+VBOHeap::VBO::free_list::setEnd(free_block *block) {
   block->next = nullptr;
   block->prev = end;
   end->next = block;
   end = block;
+  return block;
 }
 
 VBOHeap::VBO::free_list::free_block *
 VBOHeap::VBO::free_list::prepend(const GLintptr offset, const GLsizeiptr size) {
-  free_block *block = new free_block{nullptr, nullptr, offset, size};
-  setBegin(block);
-  return block;
+  return setBegin(new free_block{nullptr, nullptr, offset, size});
 }
 VBOHeap::VBO::free_list::free_block *
 VBOHeap::VBO::free_list::append(const GLintptr offset, const GLsizeiptr size) {
-  free_block *block = new free_block{end, nullptr, offset, size};
-  setEnd(block);
-  return block;
+  return setEnd(new free_block{end, nullptr, offset, size});
 }
 VBOHeap::VBO::free_list::free_block *
 VBOHeap::VBO::free_list::insertAfter(free_block *before, const GLintptr offset,
                                      const GLsizeiptr size) {
-  free_block *block = new free_block{nullptr, nullptr, offset, size};
   if (before == end) {
-    setEnd(block);
-  } else {
-    before->next = block;
-    block->prev = before;
-    free_block *after = before->next;
-    block->next = after;
-    after->prev = block;
+    return setEnd(new free_block{nullptr, nullptr, offset, size});
   }
+
+  free_block *block = new free_block{nullptr, nullptr, offset, size};
+
+  before->next = block;
+  block->prev = before;
+  free_block *after = before->next;
+  block->next = after;
+  after->prev = block;
+
   return block;
 }
 VBOHeap::VBO::free_list::free_block *
@@ -83,7 +84,6 @@ VBOHeap::VBO::free_list::coalesce(free_block *block) {
     block->offset = before->offset;
     block->size += before->size;
     if (before == begin) {
-      // setBegin(block);
       block->prev = nullptr;
       begin = block;
     } else {
@@ -96,7 +96,6 @@ VBOHeap::VBO::free_list::coalesce(free_block *block) {
   if (after && block->offset + block->size == after->offset) {
     block->size += after->size;
     if (after == end) {
-      /*setEnd(block);*/
       block->next = nullptr;
       end = block;
     } else {

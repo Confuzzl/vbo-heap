@@ -71,8 +71,8 @@ export struct VBOHeap {
       free_list();
       ~free_list();
 
-      void setBegin(free_block *block);
-      void setEnd(free_block *block);
+      free_block *setBegin(free_block *block);
+      free_block *setEnd(free_block *block);
 
       free_block *prepend(const GLintptr offset, const GLsizeiptr size);
       free_block *append(const GLintptr offset, const GLsizeiptr size);
