@@ -133,6 +133,8 @@
     <ClCompile Include="heap.cpp" />
     <ClCompile Include="heap.ixx" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="stack.cpp" />
+    <ClCompile Include="stack.ixx" />
     <ClCompile Include="vbo_heap.cpp" />
     <ClCompile Include="vbo_heap.ixx" />
   </ItemGroup>
