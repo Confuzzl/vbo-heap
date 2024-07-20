@@ -26,8 +26,8 @@ handle buffer_object::allocate(const GLuint size) {
       current->offset += size;
       current->size = newSize;
     }
-    println("[{}, {}]", out->offset, size);
-    println("<{}, {}>", current->offset, current->size);
+    // println("[{}, {}]", out->offset, size);
+    // println("<{}, {}>", current->offset, current->size);
     return out;
   }
   return {};
@@ -38,7 +38,6 @@ void buffer_object::free(const raw_handle *handle) {
          handle->offset + handle->size > after->offset) {
     after++;
   }
-  // freeList.insert(after, {handle->offset, handle->size});
   coalesce(freeList.insert(after, {handle->offset, handle->size}));
 }
 void buffer_object::coalesce(const free_list::iterator &block) {
@@ -80,7 +79,7 @@ handle allocator::get(const GLuint size) {
     if (handle out = buffer.allocate(size); out)
       return out;
   }
-  return {};
+  return buffers.emplace_back().allocate(size);
 }
 void allocator::print() {
   for (auto &buffer : buffers) {
