@@ -6,32 +6,11 @@ import debug;
 
 raw_handle::~raw_handle() {
   if (parent) {
+    println("deleting handle");
     parent->free(this);
   }
 }
 
-handle buffer_object::allocate(const GLuint size) {
-  if (size > SIZE)
-    return {};
-  for (auto current = freeList.begin(); current != freeList.cend(); current++) {
-    if (size > current->size)
-      continue;
-
-    const auto newSize = current->size - size;
-
-    handle out = std::make_unique<raw_handle>(this, current->offset, size);
-    if (newSize == 0) {
-      freeList.erase(current);
-    } else {
-      current->offset += size;
-      current->size = newSize;
-    }
-    // println("[{}, {}]", out->offset, size);
-    // println("<{}, {}>", current->offset, current->size);
-    return out;
-  }
-  return {};
-}
 void buffer_object::free(const raw_handle *handle) {
   auto after = freeList.cbegin();
   while (after != freeList.cend() &&
@@ -67,22 +46,42 @@ void buffer_object::print() {
     out += std::string(nextOffset - (free->offset + free->size), 'X');
   }
 
-  for (auto i = 4; i < out.size(); i += 5) {
+  static constexpr auto GROUP = 8u;
+  for (auto i = GROUP; i < out.size(); i += GROUP + 1) {
     out.insert(out.cbegin() + i, ' ');
   }
 
   println("[{}]", out);
 }
 
-handle allocator::get(const GLuint size) {
+ebo_handle ebo::allocate(const std::initializer_list<GLuint> &indices) {
+  const GLuint size = static_cast<GLuint>(indices.size() * sizeof(GLuint));
+  if (size > SIZE)
+    return {};
+  for (auto current = freeList.begin(); current != freeList.cend(); current++) {
+    if (size > current->size)
+      continue;
+
+    const auto newSize = current->size - size;
+
+    ebo_handle out =
+        std::make_unique<raw_ebo_handle>(this, current->offset, size);
+    out->write(indices);
+    if (newSize == 0) {
+      freeList.erase(current);
+    } else {
+      current->offset += size;
+      current->size = newSize;
+    }
+    return out;
+  }
+  return {};
+}
+
+ebo_handle ebo_allocator::get(const std::initializer_list<GLuint> &indices) {
   for (auto &buffer : buffers) {
-    if (handle out = buffer.allocate(size); out)
+    if (auto out = buffer.allocate(indices); out)
       return out;
   }
-  return buffers.emplace_back().allocate(size);
-}
-void allocator::print() {
-  for (auto &buffer : buffers) {
-    buffer.print();
-  }
+  return buffers.emplace_back().allocate(indices);
 }

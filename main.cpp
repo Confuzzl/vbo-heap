@@ -2,16 +2,13 @@ import debug;
 import heap;
 
 int main() {
-  heap::allocator heap{};
+  heap::vbo_allocator heap{};
   heap.init();
-  //{
-  std::vector<heap::handle> handles{};
-  handles.reserve(10);
-  handles.emplace_back(heap.get(15));
+  std::vector<heap::vbo_handle> handles;
+  handles.emplace_back(heap.get<int>(3));
+  handles.emplace_back(heap.get<double>(1));
+  handles.emplace_back(heap.get<int>(1));
   heap.print();
-  handles.emplace_back(heap.get(2));
+  handles.erase(handles.begin() + 1);
   heap.print();
-
-  //}
-  // heap.print();
 }
